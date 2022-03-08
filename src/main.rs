@@ -1,15 +1,15 @@
 use std::env;
-use std::fmt::{self, Debug};
+use std::fmt::{self, Debug, format};
 use std::str::FromStr;
 
 use anyhow::anyhow;
 use teloxide::{prelude2::*, utils::command::BotCommand};
-use teloxide_core::types::{InlineQuery, InlineQueryResultArticle, InputMessageContent, InputMessageContentText};
+use teloxide_core::types::{InlineKeyboardButton, InlineKeyboardButtonKind, InlineKeyboardMarkup, InlineQuery, InlineQueryResultArticle, InputMessageContent, InputMessageContentText};
 use tokio;
 use url::Url;
 
+use timhatdiehandandermaus::{Movie, MovieDeleteStatus};
 use timhatdiehandandermaus::api::Api;
-use timhatdiehandandermaus::MovieDeleteStatus;
 
 static POLL_MAX_OPTIONS_COUNT: usize = 10;
 
@@ -159,7 +159,7 @@ async fn send_movie_poll(api: Api, bot: &Bot, chat_id: i64) -> anyhow::Result<Me
         .collect::<Vec<String>>();
 
     let options_count = POLL_MAX_OPTIONS_COUNT - default_options.len();
-    let mut options = match api.queue().await {
+    let options = match api.queue().await {
         Ok(value) => value
             .movies
             .into_iter()
@@ -219,12 +219,80 @@ async fn answer(
 
     Ok(())
 }
+
 async fn inline_query_handler(
     query: InlineQuery,
     bot: AutoSend<Bot>,
+    api: Api,
 ) -> anyhow::Result<()> {
+    let queue = api
+        .queue()
+        .await?
+        .movies
+        .into_iter()
+        .filter_map(|x| x.ok())
+        .collect::<Vec<Movie>>()
+        .chunks(3)
+        .into_iter()
+        .map(|chunk|
+            chunk
+                .into_iter()
+                .map(|m| {
+                    let data = format!("delete|{}", m.id);
+                    InlineKeyboardButton::new(m.imdb.title.clone(), InlineKeyboardButtonKind::CallbackData(data))
+                })
+                .collect::<Vec<InlineKeyboardButton>>())
+        .collect::<Vec<Vec<InlineKeyboardButton>>>()
+        ;
+    let inline_keyboard = InlineKeyboardMarkup::new(queue);
+    let markup = InlineQueryResultArticle::new(
+        "delete",
+        "Delete movie",
+        InputMessageContent::Text(InputMessageContentText::new("Delete")),
+    ).reply_markup(inline_keyboard);
+
+    bot.answer_inline_query(query.id, vec![markup.into()]).await?;
+
     Ok(())
 }
+
+async fn callback_handler(
+    q: CallbackQuery,
+    bot: AutoSend<Bot>,
+    api: Api,
+) -> anyhow::Result<()> {
+    if let Some(ref data) = q.data {
+        let data = data.split("|").collect::<Vec<&str>>();
+        let action = data[0];
+        let movie_id = data[1];
+        // let title = data[2];
+
+        let mut text= String::new();
+        match action {
+            "delete" => {
+                // TODO: error handling
+                let movie = api.delete_movie(movie_id.to_string(), MovieDeleteStatus::Deleted).await??;
+
+                text = format!("Deleted {}", movie.imdb.title);
+            }
+            &_ => {}
+        }
+
+        match q.message {
+            Some(Message { id, chat, .. }) => {
+                bot.edit_message_text(chat.id, id, text).await?;
+            }
+            None => {
+                if let Some(id) = q.inline_message_id {
+                    bot.edit_message_text_inline(id, text).await?;
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -248,16 +316,17 @@ async fn main() -> anyhow::Result<()> {
                     .endpoint(answer)
             )
         )
-        .branch(Update::filter_inline_query().endpoint(inline_query_handler));
+        .branch(Update::filter_inline_query().endpoint(inline_query_handler))
+        .branch(Update::filter_callback_query().endpoint(callback_handler));
 
     let api = Api::new(env::var("BASE_URL").unwrap_or("http://api".to_string()).parse().expect("BASE_URL is in the wrong format"));
     Dispatcher::builder(bot, handler)
         .dependencies(dptree::deps![api])
         .default_handler(|update| async move {
-            log::warn!("Unhandler update: {:?}", update)
+            log::warn!("Unhandled update: {:?}", update)
         })
         .error_handler(LoggingErrorHandler::with_custom_text(
-            "An error has occured in the dispatcher",
+            "An error has occurred in the dispatcher",
         ))
         .build()
         .setup_ctrlc_handler()

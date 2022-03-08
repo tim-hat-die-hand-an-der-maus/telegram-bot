@@ -70,7 +70,7 @@ pub struct QueueMovie {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Movie {
     pub id: String,
-    imdb: ImdbMovie,
+    pub imdb: ImdbMovie,
     status: MovieStatus,
 }
 
@@ -106,9 +106,9 @@ pub struct ImdbCover {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ImdbMovie {
-    id: String,
-    title: String,
-    year: u32,
-    rating: String,
-    cover: ImdbCover,
+    pub id: String,
+    pub title: String,
+    pub year: u32,
+    pub rating: String,
+    pub cover: ImdbCover,
 }
