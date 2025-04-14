@@ -13,7 +13,7 @@ dependencies = [
     "bs-config [dotenv] ==1.1.1",
     "httpx ==0.28.*",
     "python-telegram-bot ==21.10",
-    "python-levenshtein ==0.26.1",
+    "python-levenshtein ==0.27.1",
     "sentry-sdk ==2.26.*",
     "timhatdiehandandermaus-sdk ==3.1.0",
 ]
