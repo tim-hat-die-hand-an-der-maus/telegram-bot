@@ -371,7 +371,7 @@ requires-dist = [
     { name = "python-levenshtein", specifier = "==0.27.1" },
     { name = "python-telegram-bot", specifier = "==22.0" },
     { name = "sentry-sdk", specifier = "==2.26.*" },
-    { name = "timhatdiehandandermaus-sdk", specifier = "==3.5.3", index = "https://pypi.bjoernpetersen.net/" },
+    { name = "timhatdiehandandermaus-sdk", specifier = "==3.5.4", index = "https://pypi.bjoernpetersen.net/" },
 ]
 
 [package.metadata.requires-dev]
@@ -395,16 +395,16 @@ wheels = [
 
 [[package]]
 name = "timhatdiehandandermaus-sdk"
-version = "3.5.3"
+version = "3.5.4"
 source = { registry = "https://pypi.bjoernpetersen.net/" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
     { name = "thefuzz" },
 ]
-sdist = { url = "https://pypi.bjoernpetersen.net/packages/timhatdiehandandermaus_sdk-3.5.3.tar.gz", hash = "sha256:3602a6186505ce86251dad02022245309f56498d371e509d85fb3e64df538821" }
+sdist = { url = "https://pypi.bjoernpetersen.net/packages/timhatdiehandandermaus_sdk-3.5.4.tar.gz", hash = "sha256:97d83952dab42c775589ac6d226d1c33fdcaaa4ca5b6d4dedca72e0e3a5adc2b" }
 wheels = [
-    { url = "https://pypi.bjoernpetersen.net/packages/timhatdiehandandermaus_sdk-3.5.3-py3-none-any.whl", hash = "sha256:e7586bf89f69f622a2eebacdd490d7a88293ef4cb706708ad604f571ea91d2f0" },
+    { url = "https://pypi.bjoernpetersen.net/packages/timhatdiehandandermaus_sdk-3.5.4-py3-none-any.whl", hash = "sha256:2a56e0013516ac9936cd80bc99ad31ebac0360b023887888e5bb2a5d228ea7da" },
 ]
 
 [[package]]
