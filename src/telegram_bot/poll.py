@@ -13,7 +13,7 @@ async def send_movie_poll(*, config: Config, bot: telegram.Bot):
 
     movie_count = MAX_POLL_OPTIONS - len(default_options)
     movie_options = api.queued_movies(limit=movie_count)
-    options = [movie.imdb.title for movie in movie_options]
+    options = [movie.metadata.title for movie in movie_options]
     options.extend(default_options)
 
     return await bot.send_poll(

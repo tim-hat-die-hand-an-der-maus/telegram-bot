@@ -41,7 +41,7 @@ def _raw(movie: MovieResponse) -> dict | None:
 
     response = httpx.post(
         url,
-        json={"title": movie.imdb.title, "year": movie.imdb.year},
+        json={"title": movie.metadata.title, "year": movie.metadata.year},
         headers={"Content-Type": "application/json"},
         timeout=60,
     )

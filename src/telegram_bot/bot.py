@@ -59,7 +59,8 @@ async def handle_watch_delete(
     if not movie_choices:
         message = f"no match found for `{title}`"
     elif (
-        len(movie_choices) == 1 or movie_choices[0].imdb.title.lower() == title.lower()
+        len(movie_choices) == 1
+        or movie_choices[0].metadata.title.lower() == title.lower()
     ):
         queue_id = movie_choices[0].id
         if watched:
@@ -69,7 +70,7 @@ async def handle_watch_delete(
         message = response.telegram_markdown_v2()
     else:
         buttons = [
-            KeyboardButton(text=f"{command} {movie.imdb.title}")
+            KeyboardButton(text=f"{command} {movie.metadata.title}")
             for movie in movie_choices
         ]
         # display 2 buttons per row
@@ -116,7 +117,7 @@ async def wostream(update: Update, context: ContextTypes.DEFAULT_TYPE):
     providers = await search_multiple(movies)
     if not providers:
         titles = "\n".join(
-            f"{escape_markdown(movie.imdb.title)} ({movie.imdb.year})"
+            f"{escape_markdown(movie.metadata.title)} ({movie.metadata.year})"
             for movie in movies
         )
         message = f"Couldn't find any movies\n{titles}\non https://werstreamt.es"
