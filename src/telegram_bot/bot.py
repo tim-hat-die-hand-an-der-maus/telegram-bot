@@ -1,17 +1,21 @@
 import itertools
 import logging
+from uuid import UUID
 
 import httpx
+from httpx import HTTPError
 from telegram import (
     KeyboardButton,
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
     Update,
+    User,
 )
 from telegram.ext import ContextTypes
 from timhatdiehandandermaus_sdk import (
     MissingToken,
     MovieStatusSearchRequestEnum,
+    TelegramUserRequest,
     TimApi,
 )
 
@@ -35,12 +39,33 @@ async def werhatdiehandandermaus(update: Update, _: ContextTypes.DEFAULT_TYPE):
     return await TextMessage("Tim").send(update)
 
 
-async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    imdb_url = validate_context_args(context, "imdb link required as argument")[0]
+async def get_user_id(user: User) -> UUID | None:
+    dto = TelegramUserRequest(
+        id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+    )
+    try:
+        response = await api.update_telegram_user(dto)
+    except HTTPError as e:
+        _logger.error("Could not update telegram user", exc_info=e)
+        return None
+    else:
+        return response.id
 
-    movie = await api.add_movie(imdb_url=imdb_url)
+
+async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    imdb_url = validate_context_args(context, "IMDb/TMDB link required as argument")[0]
+
+    user = update.effective_user
+    user_id: UUID | None = None
+    if user is not None:
+        user_id = await get_user_id(user)
+
+    movie = await api.add_movie(imdb_url=imdb_url, user_id=user_id)
     return await TextMessage(movie.telegram_markdown_v2()).send(
-        update, disable_web_page_preview=True
+        update,
+        disable_web_page_preview=True,
     )
 
 
