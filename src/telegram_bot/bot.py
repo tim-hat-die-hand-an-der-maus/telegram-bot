@@ -38,7 +38,7 @@ async def werhatdiehandandermaus(update: Update, _: ContextTypes.DEFAULT_TYPE):
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     imdb_url = validate_context_args(context, "imdb link required as argument")[0]
 
-    movie = api.add_movie(imdb_url=imdb_url)
+    movie = await api.add_movie(imdb_url=imdb_url)
     return await TextMessage(movie.telegram_markdown_v2()).send(
         update, disable_web_page_preview=True
     )
@@ -52,7 +52,7 @@ async def handle_watch_delete(
     # we always want to delete the old reply keyboard when a button on the reply keyboard has been pressed
     reply_markup: ReplyKeyboardRemove | ReplyKeyboardMarkup = ReplyKeyboardRemove()
 
-    movie_choices = api.fuzzy_search_movie(
+    movie_choices = await api.fuzzy_search_movie(
         query=title, status=MovieStatusSearchRequestEnum.QUEUED
     )
 
@@ -64,9 +64,9 @@ async def handle_watch_delete(
     ):
         queue_id = movie_choices[0].id
         if watched:
-            response = api.mark_movie_as_watched(queue_id=queue_id)
+            response = await api.mark_movie_as_watched(queue_id=queue_id)
         else:
-            response = api.mark_movie_as_deleted(queue_id=queue_id)
+            response = await api.mark_movie_as_deleted(queue_id=queue_id)
         message = response.telegram_markdown_v2()
     else:
         buttons = [
@@ -99,7 +99,7 @@ async def watch(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def queue(update: Update, _: ContextTypes.DEFAULT_TYPE):
-    queue_movies = api.queued_movies()
+    queue_movies = await api.queued_movies()
 
     markdown_movies = [movie.telegram_markdown_v2() for movie in queue_movies]
     message = "\n".join(markdown_movies)
@@ -109,7 +109,7 @@ async def queue(update: Update, _: ContextTypes.DEFAULT_TYPE):
 async def wostream(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = " ".join(validate_context_args(context, "movie title required as argument"))
 
-    movies = api.fuzzy_search_movie(query=query)
+    movies = await api.fuzzy_search_movie(query=query)
     if not movies:
         message = "couldn't find any movie in tim which matches"
         return await TextMessage(message).send(update)

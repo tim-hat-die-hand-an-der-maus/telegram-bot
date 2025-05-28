@@ -1,6 +1,9 @@
 import asyncio
 import logging
+import signal
 import sys
+from collections.abc import Awaitable
+from typing import cast
 
 import sentry_sdk
 import telegram.ext
@@ -8,17 +11,17 @@ from telegram.ext import Application, ApplicationBuilder, filters
 from timhatdiehandandermaus_sdk import TimApi
 
 from telegram_bot import bot, poll
-from telegram_bot.config import ApiConfig, Config, load_config
+from telegram_bot.config import Config, load_config
 
 _logger = logging.getLogger(__name__)
 
 
-def main(
+def _run_application(
     application: Application,
-    api_config: ApiConfig,
+    api_client: TimApi,
 ) -> None:
     # tbot: telegram.Bot = application.bot
-    bot.api = TimApi(api_config.token, api_url=api_config.base_url)
+    bot.api = api_client
 
     # configure bot
     # asyncio.ensure_future(tbot.set_my_commands(config.COMMANDS))
@@ -60,7 +63,12 @@ def main(
     application.add_error_handler(bot.error_handler)  # type: ignore
 
     _logger.info("Starting up")
-    application.run_polling()
+    application.run_polling(
+        stop_signals=[
+            signal.SIGINT,
+            signal.SIGTERM,
+        ]
+    )
 
 
 def _setup_monitoring(config: Config) -> None:
@@ -79,27 +87,55 @@ def _setup_monitoring(config: Config) -> None:
         _logger.warning("Sentry is disabled")
 
 
-if __name__ == "__main__":
+async def _run_with_client(client: TimApi, awaitable: Awaitable) -> None:
+    try:
+        await awaitable
+    finally:
+        await client.close()
+
+
+def main():
     config = load_config()
     _setup_monitoring(config)
-    _application = ApplicationBuilder().token(config.telegram.token).build()
+    api_client = TimApi(config.api.token, api_url=config.api.base_url)
+    application = (
+        ApplicationBuilder()
+        .token(config.telegram.token)
+        .post_shutdown(lambda _: api_client.close())
+        .build()
+    )
+    telegram_bot = cast(telegram.Bot, application.bot)
 
     args = sys.argv[1:]
     _logger.info("args: %s", args)
-    if not args:
-        main(_application, config.api)
-    else:
-        if args[0] == "poll":
+    match args:
+        case []:
+            _run_application(application, api_client)
+        case ["poll"]:
             asyncio.run(
-                poll.send_movie_poll(
-                    config=config,
-                    bot=_application.bot,
+                _run_with_client(
+                    api_client,
+                    poll.send_movie_poll(
+                        api=api_client,
+                        bot=telegram_bot,
+                        chat_id=config.telegram.poll_chat_id,
+                    ),
                 )
             )
-        elif args[0] == "participation-poll":
+        case ["participation-poll"]:
             asyncio.run(
-                poll.send_participation_poll(
-                    config=config,
-                    bot=_application.bot,
+                _run_with_client(
+                    api_client,
+                    poll.send_participation_poll(
+                        chat_id=config.telegram.poll_chat_id,
+                        bot=telegram_bot,
+                    ),
                 )
             )
+        case other:
+            _logger.error("unknown command: %s", other)
+            asyncio.run(api_client.close())
+
+
+if __name__ == "__main__":
+    main()
