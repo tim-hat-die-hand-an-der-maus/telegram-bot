@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Self
 
 from bs_config import Env
+from bs_nats_updater import NatsConfig
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -34,6 +35,7 @@ class TelegramConfig:
 class Config:
     api: ApiConfig
     app_version: str
+    nats: NatsConfig
     telegram: TelegramConfig
     sentry_dsn: str | None
 
@@ -42,6 +44,7 @@ class Config:
         return cls(
             api=ApiConfig.from_env(env.scoped("API_")),
             app_version=env.get_string("APP_VERSION", default="dev"),
+            nats=NatsConfig.from_env(env.scoped("NATS_")),
             telegram=TelegramConfig.from_env(env.scoped("TELEGRAM_")),
             sentry_dsn=env.get_string("SENTRY_DSN"),
         )

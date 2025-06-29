@@ -7,6 +7,7 @@ from typing import cast
 
 import sentry_sdk
 import telegram.ext
+from bs_nats_updater import create_updater
 from telegram.ext import Application, ApplicationBuilder, filters
 from timhatdiehandandermaus_sdk import TimApi
 
@@ -100,7 +101,7 @@ def main():
     api_client = TimApi(config.api.token, api_url=config.api.base_url)
     application = (
         ApplicationBuilder()
-        .token(config.telegram.token)
+        .updater(create_updater(config.telegram.token, config.nats))
         .post_shutdown(lambda _: api_client.close())
         .build()
     )
