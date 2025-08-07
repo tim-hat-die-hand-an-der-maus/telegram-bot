@@ -15,7 +15,7 @@ dependencies = [
     "httpx ==0.28.*",
     "python-telegram-bot ==22.3",
     "python-levenshtein ==0.27.1",
-    "sentry-sdk ==2.33.*",
+    "sentry-sdk ==2.34.*",
     "timhatdiehandandermaus-sdk ==6.0.0",
 ]
 
