@@ -1,22 +1,13 @@
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: bot
-spec:
-  clusterIP: None
----
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: bot
 spec:
-  replicas: 1
   revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: bot
-  serviceName: bot
   template:
     metadata:
       labels:
@@ -42,7 +33,25 @@ spec:
               drop: [ALL]
           resources:
             requests:
-              cpu: 50m
+              cpu: 500m
               memory: 256Mi
             limits:
               cpu: "1"
+              memory: 256Mi
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: bot
+spec:
+  maxReplicaCount: 1
+  minReplicaCount: 0
+  scaleTargetRef:
+    name: bot
+  triggers:
+    - type: nats-jetstream
+      metadata:
+        natsServerMonitoringEndpoint: "nats-headless.nats-system.svc.cluster.local:8222"
+        account: "$G"
+        stream: "telegram-updates"
+        consumer: "tim-telegram-bot"
