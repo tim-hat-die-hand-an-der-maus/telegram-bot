@@ -1,5 +1,8 @@
-import telegram
-from timhatdiehandandermaus_sdk import TimApi
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import telegram
+    from timhatdiehandandermaus_sdk import TimApi
 
 
 async def send_movie_poll(*, api: TimApi, bot: telegram.Bot, chat_id: int) -> None:

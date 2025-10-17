@@ -1,6 +1,6 @@
 import itertools
 import logging
-from uuid import UUID
+from typing import TYPE_CHECKING
 
 import httpx
 from httpx import HTTPError
@@ -11,7 +11,6 @@ from telegram import (
     Update,
     User,
 )
-from telegram.ext import ContextTypes
 from timhatdiehandandermaus_sdk import (
     MissingToken,
     MovieStatusSearchRequestEnum,
@@ -23,6 +22,11 @@ from telegram_bot.exceptions import MissingContextArgs
 from telegram_bot.helper import TextMessage
 from telegram_bot.utils import escape_markdown
 from telegram_bot.wostream import search_multiple
+
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from telegram.ext import ContextTypes
 
 _logger = logging.getLogger(__name__)
 api: TimApi = None  # type: ignore

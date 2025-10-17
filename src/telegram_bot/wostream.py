@@ -1,11 +1,14 @@
 import os
 from collections import defaultdict
+from typing import TYPE_CHECKING
 
 import httpx
 from pydantic import BaseModel
-from timhatdiehandandermaus_sdk.models import MovieResponse
 
 from telegram_bot.utils import escape_markdown
+
+if TYPE_CHECKING:
+    from timhatdiehandandermaus_sdk.models import MovieResponse
 
 
 class WostreamSearchMovieResponse(BaseModel):
