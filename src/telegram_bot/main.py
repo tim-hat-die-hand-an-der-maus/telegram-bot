@@ -2,8 +2,7 @@ import asyncio
 import logging
 import signal
 import sys
-from collections.abc import Awaitable
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import sentry_sdk
 import telegram.ext
@@ -13,6 +12,9 @@ from timhatdiehandandermaus_sdk import TimApi
 
 from telegram_bot import bot, poll
 from telegram_bot.config import Config, load_config
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable
 
 _logger = logging.getLogger(__name__)
 
