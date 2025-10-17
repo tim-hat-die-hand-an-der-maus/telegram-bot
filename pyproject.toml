@@ -14,7 +14,6 @@ dependencies = [
     "bs-nats-updater ==2.1.0",
     "httpx ==0.28.*",
     "python-telegram-bot ==22.5",
-    "python-levenshtein ==0.27.1",
     "sentry-sdk ==2.42.*",
     "timhatdiehandandermaus-sdk ==6.1.0",
 ]
