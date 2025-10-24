@@ -3,6 +3,5 @@ kind: ConfigMap
 metadata:
   name: config
 data:
-  API_URL: "http://api.tim-api"
-  WOSTREAM_BASE_URL: "http://streamingprovider-resolver"
-  TELEGRAM_POLL_CHAT_ID: "-1001556735505"
+  API__BASE_URL: "http://api.tim-api"
+  TELEGRAM__POLL_CHAT_ID: "-1001556735505"

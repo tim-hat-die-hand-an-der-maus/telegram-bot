@@ -13,8 +13,8 @@ class ApiConfig:
     @classmethod
     def from_env(cls, env: Env) -> Self:
         return cls(
-            base_url=env.get_string("BASE_URL", default="http://api.tim-api"),
-            token=env.get_string("TOKEN", required=True),
+            base_url=env.get_string("base-url", default="http://api.tim-api"),
+            token=env.get_string("token", required=True),
         )
 
 
@@ -26,8 +26,8 @@ class TelegramConfig:
     @classmethod
     def from_env(cls, env: Env) -> Self:
         return cls(
-            poll_chat_id=env.get_int("POLL_CHAT_ID", required=True),
-            token=env.get_string("TOKEN", required=True),
+            poll_chat_id=env.get_int("poll-chat-id", required=True),
+            token=env.get_string("token", required=True),
         )
 
 
@@ -42,11 +42,11 @@ class Config:
     @classmethod
     def from_env(cls, env: Env) -> Self:
         return cls(
-            api=ApiConfig.from_env(env.scoped("API_")),
-            app_version=env.get_string("APP_VERSION", default="dev"),
-            nats=NatsConfig.from_env(env.scoped("NATS_")),
-            telegram=TelegramConfig.from_env(env.scoped("TELEGRAM_")),
-            sentry_dsn=env.get_string("SENTRY_DSN"),
+            api=ApiConfig.from_env(env / "api"),
+            app_version=env.get_string("app-version", default="dev"),
+            nats=NatsConfig.from_env(env / "nats"),
+            telegram=TelegramConfig.from_env(env / "telegram"),
+            sentry_dsn=env.get_string("sentry-dsn"),
         )
 
 
